@@ -1,0 +1,131 @@
+#include "infSys_pch.h"
+#include "ImGuiLayer.h"
+
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+#include "ImGuiStyles.h" // custom style
+
+#include "CAD/Core/Application.h"
+
+#include <GLFW/glfw3.h>
+#include <backends/imgui_impl_opengl3_loader.h>
+//#include "ImGuizmo.h"
+
+namespace InfSysCAD
+{
+	ImGuiLayer::ImGuiLayer()
+	{
+		INFSYS_PROFILE_FUNCTION();
+
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		ImGui::GetStyle().WindowRounding = 0.0f;
+		ImGui::GetStyle().Colors[ImGuiCol_WindowBg].w = 1.0f;
+
+		ImGui::SetupImGuiStyle();
+
+		GLFWwindow* window = Application::Get().GetWindow().GetGLFWwindow();
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init("#version 330");
+
+
+
+
+		ImGuiWindow* lw = new LogWindow();
+		AddWindow(lw);
+
+		//ImGuiWindow* prop = new PropertyWindow();
+		//AddWindow(prop);
+
+		ImGuiWindow* mbw = new MenuBarWindow();
+		AddWindow(mbw);
+	}
+
+	ImGuiLayer::~ImGuiLayer()
+	{
+		INFSYS_PROFILE_FUNCTION();
+
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+	}
+
+	void ImGuiLayer::Render()
+	{
+		INFSYS_PROFILE_FUNCTION();
+
+		//	PreRender();
+
+		// ImGui::ShowDemoWindow();
+		for (auto i = 0; i < m_imguiWindows.size(); i++)
+			m_imguiWindows[i]->Render();
+
+		//	PostRender();
+	}
+
+	void ImGuiLayer::AddWindow(ImGuiWindow* newWin)
+	{
+		INFSYS_PROFILE_FUNCTION();
+
+		m_imguiWindows.push_back(newWin);
+	}
+
+	void ImGuiLayer::PreRender()
+	{
+		INFSYS_PROFILE_FUNCTION();
+
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		//TODO ImGuizmo::BeginFrame();
+
+		// Create the docking environment
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
+			ImGuiWindowFlags_NoBackground;
+
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
+		ImGui::PopStyleVar(3);
+
+		ImGuiID dockSpaceId = ImGui::GetID("InvisibleWindowDockSpace");
+		ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+		ImGui::End();
+	}
+
+	void ImGuiLayer::PostRender()
+	{
+		INFSYS_PROFILE_FUNCTION();
+
+		ImGuiIO& io = ImGui::GetIO();
+		Application& app = Application::Get();
+		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+
+		ImGui::Render();
+	/*	glClearColor(0.8, 0.8, 0.8, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);*/
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
+	}
+}

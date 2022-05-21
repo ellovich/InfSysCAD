@@ -1,0 +1,13 @@
+[submodule "InfSysCAD/products/imgui"]
+	path = InfSysCAD/products/imgui
+	url = https://github.com/ellovich/imgui
+	branch = docking
+[submodule "InfSysCAD/products/glfw"]
+	path = InfSysCAD/products/glfw
+	url = https://github.com/ellovich/glfw
+[submodule "InfSysCAD/products/spdlog"]
+	path = InfSysCAD/products/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "InfSysCAD/products/occt"]
+	path = InfSysCAD/products/occt
+	url = https://github.com/Open-Cascade-SAS/OCCT

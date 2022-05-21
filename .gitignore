@@ -1,0 +1,23 @@
+# Binaries
+**/bin/
+**/bin-int/
+!products/premake/bin/
+!products/freetype-2.5.5-vc14-64/bin/
+!products/tcltk-86-64/bin/
+
+# OpenCascade binaries
+InfSysCAD/products/occt-build/
+InfSysCAD/products/occt-install/
+
+# Logs
+*.log
+
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+
+# Private files
+InfSysCAD/notes.txt
