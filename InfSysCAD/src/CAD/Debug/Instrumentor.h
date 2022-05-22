@@ -1,5 +1,4 @@
 #pragma once
-
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -100,8 +99,9 @@ namespace InfSysCAD
 			static Instrumentor instance;
 			return instance;
 		}
+
 	private:
-		Instrumentor()
+		Instrumentor() 
 			: m_CurrentSession(nullptr)
 		{
 		}
@@ -135,6 +135,7 @@ namespace InfSysCAD
 				m_CurrentSession = nullptr;
 			}
 		}
+
 	private:
 		std::mutex m_Mutex;
 		InstrumentationSession* m_CurrentSession;
@@ -166,13 +167,15 @@ namespace InfSysCAD
 
 			m_Stopped = true;
 		}
+
 	private:
 		const char* m_Name;
 		std::chrono::time_point<std::chrono::steady_clock> m_StartTimepoint;
 		bool m_Stopped;
 	};
 
-	namespace InstrumentorUtils {
+	namespace InstrumentorUtils 
+	{
 
 		template <size_t N>
 		struct ChangeResult
@@ -203,6 +206,7 @@ namespace InfSysCAD
 }
 
 #define INFSYS_PROFILE 0
+
 #if INFSYS_PROFILE
 	// Resolve which function signature macro will be used. Note that this only
 	// is resolved when the (pre)compiler starts, so the syntax highlighting

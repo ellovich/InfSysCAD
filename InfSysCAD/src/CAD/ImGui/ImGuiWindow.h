@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
-//#include "../../../products/imgui-filebrouser/imfilebrowser.h"
+#include <IconsFontAwesome5.h>
 
 //#include <imgui_demo.cpp>
 
@@ -30,25 +30,18 @@ namespace InfSysCAD
         virtual void Render() override;
     };
 
-
-
-    //class PropertyWindow : public ImGuiWindow
-    //{
-    //public:
-    //    virtual void Render() override;
-    //    PropertyWindow();
-    //private:
-    //    ImGui::FileBrowser m_FileDialog;
-    //    std::string m_CurrentFile;
-    //};
-
-
-    struct ExampleAppLog
+    class PropertyWindow : public ImGuiWindow
     {
-        ImGuiTextBuffer     Buf;
-        ImGuiTextFilter     Filter;
-        ImVector<int>       LineOffsets; // Index to lines offset. We maintain this with AddLog() calls.
-        bool                AutoScroll;  // Keep scrolling if already at the bottom.
+    public:
+        virtual void Render() override;
+    };
+
+    struct ExampleAppLog 
+    {
+        ImGuiTextBuffer Buf;
+        ImGuiTextFilter Filter;
+        ImVector<int>   LineOffsets; // Index to lines offset. We maintain this with AddLog() calls.
+        bool            AutoScroll;  // Keep scrolling if already at the bottom.
 
         ExampleAppLog()
         {

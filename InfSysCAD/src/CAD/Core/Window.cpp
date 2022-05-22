@@ -1,6 +1,6 @@
 #pragma once
 #include "infSys_pch.h"
-#include "CAD/Core/WindowsWindow.h"
+#include "CAD/Core/Window.h"
 
 #include <CAD/Core/Application.h>
 
@@ -25,25 +25,24 @@ namespace InfSysCAD
 		INFSYS_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
-	WindowsWindow::WindowsWindow(const char* title, int w, int h)
+	Window::Window(const char* title, int w, int h)
 	{
-		glfwSetErrorCallback(glfwErrorCallbackFunc);
+		INFSYS_PROFILE_FUNCTION();
 
-		int succsess = glfwInit();
-		INFSYS_ASSERT(succsess, "Failed to init GLFW!");
+		glfwSetErrorCallback(glfwErrorCallbackFunc);
+		int success = glfwInit();
+		INFSYS_ASSERT(success, "Failed to init GLFW!");
 
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if defined (INFSYS_DEBUG)
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
 #if defined (__APPLE__)
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#if defined (INFSYS_DEBUG)
-			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif
 		INFSYS_INFO("Creating window {0}: ({1}, {2})", title, w, h);
 		m_GLFWwindow = glfwCreateWindow(w, h, title, NULL, NULL);
 		INFSYS_ASSERT(m_GLFWwindow, "Failed to create window!");
@@ -61,7 +60,7 @@ namespace InfSysCAD
 	}
 
 
-	void WindowsWindow::Close()
+	void Window::Close()
 	{
 		if (m_GLFWwindow != nullptr)
 		{
@@ -71,7 +70,7 @@ namespace InfSysCAD
 	}
 
 
-	Aspect_RenderingContext WindowsWindow::NativeGlContext() const
+	Aspect_RenderingContext Window::NativeGlContext() const
 	{
 #if defined (__APPLE__)
 		return (NSOpenGLContext*)glfwGetNSGLContext(m_GLFWwindow);
@@ -82,15 +81,14 @@ namespace InfSysCAD
 #endif	
 	}
 
-	// TODO get size from ImGui Texture!!!
-	Graphic3d_Vec2i WindowsWindow::CursorPosition() const
+	Graphic3d_Vec2i Window::CursorPosition() const
 	{
 		Graphic3d_Vec2d aPos;
 		glfwGetCursorPos(m_GLFWwindow, &aPos.x(), &aPos.y());
 		return Graphic3d_Vec2i((int)aPos.x(), (int)aPos.y());
 	}
 
-	Aspect_Drawable WindowsWindow::NativeHandle() const
+	Aspect_Drawable Window::NativeHandle() const
 	{
 #if defined (__APPLE__)
 		return (Aspect_Drawable)glfwGetCocoaWindow(m_GLFWwindow);
@@ -101,8 +99,7 @@ namespace InfSysCAD
 #endif	
 	}
 
-	// TODO get size from ImGui Texture!!!
-	Aspect_TypeOfResize WindowsWindow::DoResize()
+	Aspect_TypeOfResize Window::DoResize()
 	{
 		if (glfwGetWindowAttrib(m_GLFWwindow, GLFW_VISIBLE) == 1)
 		{
@@ -117,17 +114,17 @@ namespace InfSysCAD
 		return Aspect_TOR_UNKNOWN;
 	}
 
-	bool WindowsWindow::IsMapped() const
+	bool Window::IsMapped() const
 	{
 		return glfwGetWindowAttrib(m_GLFWwindow, GLFW_VISIBLE) != 0;
 	}
 
-	void WindowsWindow::Map() const
+	void Window::Map() const
 	{
 		glfwShowWindow(m_GLFWwindow);
 	}
 
-	void WindowsWindow::Unmap() const
+	void Window::Unmap() const
 	{
 		glfwHideWindow(m_GLFWwindow);
 	}

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "CAD/Core/PlatformDetection.h"
+#include "CAD/Debug/PlatformDetection.h"
 
 #ifdef INFSYS_DEBUG
 	#if defined(INFSYS_PLATFORM_WINDOWS)

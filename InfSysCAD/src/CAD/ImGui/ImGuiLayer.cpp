@@ -20,12 +20,18 @@ namespace InfSysCAD
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
+
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		ImGui::GetStyle().WindowRounding = 0.0f;
-		ImGui::GetStyle().Colors[ImGuiCol_WindowBg].w = 1.0f;
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
 
 		ImGui::SetupImGuiStyle();
 
@@ -33,22 +39,22 @@ namespace InfSysCAD
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 330");
 
-
-
+		//ImGuiWindow* mbw = new MenuBarWindow();
+		//AddWindow(mbw);
 
 		ImGuiWindow* lw = new LogWindow();
 		AddWindow(lw);
 
-		//ImGuiWindow* prop = new PropertyWindow();
-		//AddWindow(prop);
-
-		ImGuiWindow* mbw = new MenuBarWindow();
-		AddWindow(mbw);
+		ImGuiWindow* prop = new PropertyWindow();
+		AddWindow(prop);
 	}
 
 	ImGuiLayer::~ImGuiLayer()
 	{
 		INFSYS_PROFILE_FUNCTION();
+
+		//for (int i = 0; i < m_imguiWindows.size(); i++)
+		//	m_imguiWindows[i]->~ImGuiWindow();
 
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
@@ -59,13 +65,13 @@ namespace InfSysCAD
 	{
 		INFSYS_PROFILE_FUNCTION();
 
-		//	PreRender();
+		PreRender();
 
-		// ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 		for (auto i = 0; i < m_imguiWindows.size(); i++)
 			m_imguiWindows[i]->Render();
 
-		//	PostRender();
+		PostRender();
 	}
 
 	void ImGuiLayer::AddWindow(ImGuiWindow* newWin)
@@ -99,9 +105,9 @@ namespace InfSysCAD
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
 		ImGui::Begin("InvisibleWindow", nullptr, windowFlags);
 		ImGui::PopStyleVar(3);
-
 		ImGuiID dockSpaceId = ImGui::GetID("InvisibleWindowDockSpace");
 		ImGui::DockSpace(dockSpaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 		ImGui::End();
@@ -115,9 +121,8 @@ namespace InfSysCAD
 		Application& app = Application::Get();
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 
+		// Rendering
 		ImGui::Render();
-	/*	glClearColor(0.8, 0.8, 0.8, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);*/
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAD/Core/Base.h"
+#include "CAD/Debug/Base.h"
 
 // This ignores all warnings raised inside External headers
 #pragma warning(push, 0)
@@ -21,8 +21,8 @@ namespace InfSysCAD
 	};
 }
 						    
-#define INFSYS_TRACE(...)	    ::InfSysCAD::Log::GetLogger()->trace(__VA_ARGS__)
-#define INFSYS_INFO(...)	    ::InfSysCAD::Log::GetLogger()->info(__VA_ARGS__)
-#define INFSYS_WARN(...)	    ::InfSysCAD::Log::GetLogger()->warn(__VA_ARGS__)
-#define INFSYS_ERROR(...)	    ::InfSysCAD::Log::GetLogger()->error(__VA_ARGS__)
-#define INFSYS_FATAL(...)	    ::InfSysCAD::Log::GetLogger()->fatal(__VA_ARGS__)
+#define INFSYS_TRACE(...)	::InfSysCAD::Log::GetLogger()->trace(__VA_ARGS__)
+#define INFSYS_INFO(...)	::InfSysCAD::Log::GetLogger()->info(__VA_ARGS__)
+#define INFSYS_WARN(...)	::InfSysCAD::Log::GetLogger()->warn(__VA_ARGS__)
+#define INFSYS_ERROR(...)	::InfSysCAD::Log::GetLogger()->error(__VA_ARGS__)
+#define INFSYS_FATAL(...)	::InfSysCAD::Log::GetLogger()->fatal(__VA_ARGS__)

@@ -1,8 +1,7 @@
 #include "infsys_pch.h"
 #include "CAD/Core/Application.h"
-#include <imgui.h>
+
 #include <GLFW/glfw3.h>
-#include <backends/imgui_impl_opengl3_loader.h>
 
 namespace InfSysCAD
 {
@@ -16,9 +15,9 @@ namespace InfSysCAD
 		INFSYS_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = CreateScope<WindowsWindow>(name, 800, 600);
-		m_Viewer = CreateScope<Viewer>(m_Window.get());       
-		m_Scene = CreateScope<Scene>(m_Viewer->GetContext()); 
+		m_Window = new Window(name, 1280, 720);
+		m_Viewer = CreateScope<Viewer>(m_Window);
+		m_Scene = CreateScope<Scene>(m_Viewer->GetContext());
 		m_ImGuiLayer = CreateScope<ImGuiLayer>();
 	}
 
@@ -31,7 +30,9 @@ namespace InfSysCAD
 			INFSYS_PROFILE_SCOPE("RunLoop");
 
 			m_Viewer->Update();
-	//		m_ImGuiLayer->Render();
+			m_ImGuiLayer->Render();
+			glfwSwapBuffers(m_Window->GetGLFWwindow());
 		}
+		std::cout << "";
 	}
 }

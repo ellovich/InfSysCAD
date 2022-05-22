@@ -12,6 +12,13 @@ namespace ImGui
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("resources/fonts/Roboto-Regular.ttf", 18.0f);
 
+        // merge in icons from Font Awesome
+        static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+        ImFontConfig icons_config; 
+        icons_config.MergeMode = true; 
+        icons_config.PixelSnapH = true;
+        io.Fonts->AddFontFromFileTTF("resources/fonts/fa-regular-400.ttf", 18.0f, &icons_config, icons_ranges);
+
         // light style from Pacôme Danhiez (user itamago) https://github.com/ocornut/imgui/pull/511#issuecomment-175719267
         style.Alpha = 1.0f;
         style.FrameRounding = 3.0f;

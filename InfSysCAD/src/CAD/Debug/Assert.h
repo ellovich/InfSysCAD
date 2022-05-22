@@ -1,6 +1,5 @@
 #pragma once
-
-#include "CAD/Core/Base.h"
+#include "CAD/Debug/Base.h"
 #include "CAD/Debug/Log.h"
 #include <filesystem>
 

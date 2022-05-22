@@ -9,12 +9,12 @@ struct GLFWwindow;
 
 namespace InfSysCAD
 {
-	class WindowsWindow : public Aspect_Window
+	class Window : public Aspect_Window
 	{
-		DEFINE_STANDARD_RTTI_INLINE(WindowsWindow, Aspect_Window)
+		DEFINE_STANDARD_RTTI_INLINE(Window, Aspect_Window)
 	public:
-		WindowsWindow(const char* title, int w, int h);
-		virtual ~WindowsWindow() { Close(); }
+		Window(const char* title, int w, int h);
+		virtual ~Window() { Close(); }
 
 		void Close();
 

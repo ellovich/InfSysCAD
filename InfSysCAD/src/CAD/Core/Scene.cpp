@@ -6,13 +6,14 @@
 #include <BRepPrimAPI_MakeBox.hxx>
 
 #include <CAD/Step/ImportExport.h>
-
 #include <CAD/Step/DisplayScene.h>
+
+#include "CAD/Utils/FileDialogs.h"
 
 namespace InfSysCAD
 {
 	Scene::Scene(Handle(AIS_InteractiveContext) context)
-		: m_Context(context)
+		: m_Context(context), m_CurrentFilename("unknown")
 	{
 		//auto aBox1 = BRepPrimAPI_MakeBox(m_Axis, 80, 100, 80).Shape();
 		//AddObeject(aBox1, gp_Pnt(0, 0, 0));
@@ -20,8 +21,6 @@ namespace InfSysCAD
 		auto doc = ImportExport::ReadStepWithMeta("resources/models/chassis.step");
 		DisplayScene ds(doc, context);
 		ds.Execute();
-
-		std::cout << ImportExport::TraverseDocument(doc) << std::endl;
 	}
 
 	void Scene::AddObeject(const TopoDS_Shape& topoDS_Shape, gp_Pnt pos)
@@ -40,5 +39,33 @@ namespace InfSysCAD
 	void Scene::RemoveObject()
 	{
 
+	}
+
+	void Scene::LoadFile()
+	{
+		std::string filepath = FileDialogs::OpenFile("Step files(*.step)\0*.step\0Stp files(*.stp)\0*stp\0All files(*.*)\0*.*\0");
+		if (!filepath.empty())
+		{
+			m_CurrentFilename = filepath.substr(filepath.find_last_of("/\\") + 1);
+			//std::thread t1([=]()
+			//	{
+					auto doc = ImportExport::ReadStepWithMeta(filepath.c_str());
+					DisplayScene ds(doc, m_Context);
+					ds.Execute();
+			//	});
+		}
+	}
+	void Scene::SaveFile()
+	{
+		std::string filepath = FileDialogs::SaveFile("Step files(*.step)\0*.step\0Stp files(*.stp)\0*stp\0All files(*.*)\0*.*\0");
+		if (!filepath.empty())
+		{
+			////std::thread t1([=]()
+			////	{
+			//auto doc = ImportExport::ReadStepWithMeta(filepath.c_str());
+			//DisplayScene ds(doc, m_Context);
+			//ds.Execute();
+			////	});
+		}
 	}
 }

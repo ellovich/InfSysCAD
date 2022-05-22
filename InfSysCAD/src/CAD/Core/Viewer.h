@@ -1,30 +1,27 @@
 #pragma once
-#include "CAD/Core/WindowsWindow.h"
+#include "CAD/Core/Window.h"
 
 #include <AIS_ViewController.hxx>
 #include <V3d_View.hxx>
 #include <AIS_InteractiveContext.hxx>
-
-#include <OpenGl_Context.hxx>
-#include <OpenGl_Texture.hxx>
 
 namespace InfSysCAD
 {
 	class Viewer : protected AIS_ViewController
 	{
 	public:
-		Viewer(WindowsWindow* window);
+		Viewer(Window* window);
 		~Viewer() { m_View->Remove(); }
 		
 		void Update();
 
-		Handle(AIS_InteractiveContext) GetContext() { return m_InteractiveContext; }
+		Handle(AIS_InteractiveContext) GetContext() const { return m_InteractiveContext; }
 		
 	private:
 		void InitCallbacks();
 
 	private:
-		Handle(WindowsWindow) m_Window;
+		Handle(Window) m_Window;
 		Handle(V3d_View) m_View;
 		Handle(AIS_InteractiveContext) m_InteractiveContext;
 

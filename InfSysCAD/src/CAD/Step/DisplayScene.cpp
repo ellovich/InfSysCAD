@@ -79,12 +79,7 @@ namespace InfSysCAD
                 TCollection_AsciiString entry;
                 TDF_Tool::Entry(L, entry);
 
-#if defined COUT_DEBUG
-                std::cout << "DisplayScene::Execute(): cannot display item '"
-                    << entry.ToCString()
-                    << "'"
-                    << std::endl;
-#endif
+                INFSYS_ERROR("DisplayScene::Execute(): cannot display item '{0}'", entry.ToCString());
             }
         }
 
@@ -152,22 +147,12 @@ namespace InfSysCAD
                     TCollection_AsciiString refEntry;
                     TDF_Tool::Entry(refLabel, refEntry);
 
-#if defined COUT_DEBUG
-                    std::cout << "DisplayScene::Execute(): creating original AIS object for item '"
-                        << refEntry.ToCString()
-                        << "'"
-                        << std::endl;
-#endif
+                    INFSYS_TRACE("DisplayScene::Execute(): creating original AIS object for item '{0}'", refEntry.ToCString());
 
                     // Original.
                     Handle(AIS_ColoredShape) brepPrs = new XCAFPrs_AISObject(refLabel);
 
-#if defined COUT_DEBUG
-                    std::cout << "DisplayScene::Execute(): creating AIS object connected to the item '"
-                        << refEntry.ToCString()
-                        << "'"
-                        << std::endl;
-#endif
+                    INFSYS_TRACE("DisplayScene::Execute() : creating AIS object connected to the item '{0}'", refEntry.ToCString());
 
                     // Connected.
                     brepConnected = new AIS_ConnectedInteractive();
@@ -199,12 +184,7 @@ namespace InfSysCAD
                         TCollection_AsciiString originalEntry;
                         TDF_Tool::Entry(originalLab, originalEntry);
 
-#if defined COUT_DEBUG
-                        std::cout << "DisplayScene::Execute(): creating AIS object connected to the item '"
-                            << originalEntry.ToCString()
-                            << "'"
-                            << std::endl;
-#endif
+                        INFSYS_TRACE("DisplayScene::Execute(): creating AIS object connected to the item '{0}'", originalEntry.ToCString());
 
                         // Connected.
                         brepConnected = new AIS_ConnectedInteractive();
@@ -224,10 +204,7 @@ namespace InfSysCAD
                 }
                 catch (...)
                 {
-                    std::cout << "DisplayScene::Execute(): invalid shape for item '"
-                        << itemId.ToCString()
-                        << "'"
-                        << std::endl;
+                    INFSYS_ERROR("DisplayScene::Execute(): invalid shape for item {0}'", itemId.ToCString());
 
                     m_ctx->Remove(brepConnected, Standard_False);
                     mapOfOriginals.UnBind(refLabel);

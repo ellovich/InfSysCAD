@@ -26,9 +26,6 @@
 #include <GLFW/glfw3native.h>
 
 #include <CAD/Core/Application.h>
-#include <OpenGl_FrameBuffer.hxx>
-#include <OpenGl_GlTypes.hxx>
-#include <OpenGl_glext.h>
 
 #include <Aspect_RenderingContext.hxx>
 
@@ -67,16 +64,16 @@ namespace
 
 namespace InfSysCAD
 {
-	Viewer::Viewer(WindowsWindow* window)
+	Viewer::Viewer(Window* window)
 		: m_Window(window)
 	{
 		InitCallbacks();
 
-		// V3d Viewer
-		Handle(OpenGl_GraphicDriver) aGraphicDriver = new OpenGl_GraphicDriver(m_Window->GetDisplay(), false);
-		aGraphicDriver->SetBuffersNoSwap(true);
+		const Handle(OpenGl_GraphicDriver) aGraphicDriver = new OpenGl_GraphicDriver(m_Window->GetDisplay(), false);
+		aGraphicDriver->SetBuffersNoSwap(true); // swapping in mainloop
 
-		Handle(V3d_Viewer) aViewer = new V3d_Viewer(aGraphicDriver);
+		// V3d Viewer
+		const Handle(V3d_Viewer) aViewer = new V3d_Viewer(aGraphicDriver);
 		aViewer->SetDefaultLights();
 		aViewer->SetLightOn();
 		aViewer->SetDefaultTypeOfView(V3d_PERSPECTIVE);
@@ -86,45 +83,72 @@ namespace InfSysCAD
 		// V3d_View
 		m_View = aViewer->CreateView();
 		m_View->SetImmediateUpdate(false);
+		m_View->SetWindow(m_Window, m_Window->NativeGlContext());
+		// optional
 		m_View->ChangeRenderingParams().ToShowStats = true;
 		m_View->ChangeRenderingParams().RenderResolutionScale = 2.0f;
-		m_View->SetWindow(m_Window, m_Window->NativeGlContext());
 		m_View->SetBgGradientColors(
 			Quantity_Color(0.75, 0.78, 0.95, Quantity_TOC_RGB),
 			Quantity_Color(0.63, 0.6, 0.61, Quantity_TOC_RGB),
 			Aspect_GFM_DIAG1
 		);
 		m_View->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_BLUE1, 0.14, V3d_WIREFRAME);
+		m_View->SetShadingModel(V3d_PHONG);
 
+		// AIS_InteractiveContext
 		m_InteractiveContext = new AIS_InteractiveContext(aViewer);
+		m_InteractiveContext->Activate(4, true); // faces
+		m_InteractiveContext->Activate(2, true); // edges
 		m_InteractiveContext->SetDisplayMode(AIS_Shaded, true);
 
-		m_Window->Map();
+		// Configure some global props.
+		const Handle(Prs3d_Drawer)& contextDrawer = m_InteractiveContext->DefaultDrawer();
+		if (!contextDrawer.IsNull())
+		{
+			const Handle(Prs3d_ShadingAspect)& SA = contextDrawer->ShadingAspect();
+			const Handle(Graphic3d_AspectFillArea3d)& FA = SA->Aspect();
+			contextDrawer->SetFaceBoundaryDraw(true); // Draw edges.
+			FA->SetEdgeOff();
 
-		// m_View->Camera()->SetProjectionType(Graphic3d_Camera::Projection_Orthographic);
+			// Fix for inifinite lines has been reduced to 1000 from its default value 500000.
+			contextDrawer->SetMaximalParameterValue(1000);
+		}
 	}
 
 	void Viewer::Update()
 	{
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		static double previous_seconds = glfwGetTime();
+		double current_seconds = glfwGetTime();
+		double elapsed_seconds = current_seconds - previous_seconds;
+		previous_seconds = current_seconds;
 
-		FlushViewEvents(m_InteractiveContext, m_View, false);
-		m_View->Redraw();
-		
-		Application::Get().GetImGuiLayer().PreRender();
-		ImGui::ShowDemoWindow();
-		Application::Get().GetImGuiLayer().PostRender();
+		glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		{
+			INFSYS_PROFILE_SCOPE("FlushViewEvents");
+			FlushViewEvents(m_InteractiveContext, m_View, false);
+		}
+
+		{
+			INFSYS_PROFILE_SCOPE("Redraw");
+			m_View->Redraw();
+		}
 
 		glfwWaitEvents();
-		glfwSwapBuffers(m_Window->GetGLFWwindow());
 
-		HandleViewEvents(m_InteractiveContext, m_View);
+		{
+			INFSYS_PROFILE_SCOPE("HandleViewEvents");
+			HandleViewEvents(m_InteractiveContext, m_View);
+		}
 	}
 
 
 	void Viewer::InitCallbacks()
 	{
+		INFSYS_PROFILE_FUNCTION();
+
 		glfwSetWindowUserPointer(m_Window->GetGLFWwindow(), this);
 
 		glfwSetWindowCloseCallback(m_Window->GetGLFWwindow(), [](GLFWwindow* window)
@@ -177,90 +201,131 @@ namespace InfSysCAD
 
 	void Viewer::onMouseScroll(double dx, double dy)
 	{
-		UpdateZoom(Aspect_ScrollDelta(m_Window->CursorPosition(), int(dy * 8.0)));
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddMouseWheelEvent(dx, dy);
+
+		if (!io.WantCaptureMouse) // ONLY forward mouse data to your underlying app/game.
+		{
+			UpdateZoom(Aspect_ScrollDelta(m_Window->CursorPosition(), int(dy * 8.0)));
+		}
 	}
 
 	void Viewer::onMouseButton(int button, int action, int mods)
 	{
-		const Graphic3d_Vec2i aPos = m_Window->CursorPosition();
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddMouseButtonEvent(button, action);
 
-		if (action == GLFW_PRESS)
-			PressMouseButton(aPos, ::MouseButtonFromGlfw(button), ::KeyFlagsFromGlfw(mods), false);
-		else
-			ReleaseMouseButton(aPos, ::MouseButtonFromGlfw(button), ::KeyFlagsFromGlfw(mods), false);
+		if (!io.WantCaptureMouse) // ONLY forward mouse data to your underlying app/game.
+		{
+			const Graphic3d_Vec2i aPos = m_Window->CursorPosition();
+			if (action == GLFW_PRESS)
+				PressMouseButton(aPos, ::MouseButtonFromGlfw(button), ::KeyFlagsFromGlfw(mods), false);
+			else
+				ReleaseMouseButton(aPos, ::MouseButtonFromGlfw(button), ::KeyFlagsFromGlfw(mods), false);
+		}
 	}
 
-	void Viewer::onMouseMove(int thePosX, int thePosY)
+	void Viewer::onMouseMove(int x, int y)
 	{
-		const Graphic3d_Vec2i aNewPos(thePosX, thePosY);
-		UpdateMousePosition(aNewPos, PressedMouseButtons(), LastMouseFlags(), false);
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddMousePosEvent(x, y);
+
+		if (!io.WantCaptureMouse) // ONLY forward mouse data to your underlying app/game.
+		{
+			const Graphic3d_Vec2i aNewPos(x, y);
+			UpdateMousePosition(aNewPos, PressedMouseButtons(), LastMouseFlags(), false);
+		}
 	}
 
 	void Viewer::onKey(int key, int scancode, int action, int mods)
 	{
-		switch (key)
-		{
-		case GLFW_KEY_F:
-		{
-			if (m_InteractiveContext->NbSelected() > 0)
-				m_InteractiveContext->FitSelected(m_View);
-			else
-				m_View->FitAll();
-			break;
-		}
-		case GLFW_KEY_S:
-		case GLFW_KEY_W:
-		{
-			const int dm = (key == GLFW_KEY_S) ? AIS_Shaded : AIS_WireFrame;
+		ImGuiIO& io = ImGui::GetIO();
+		//	io.AddKeyEvent(key, action);
 
-			if (m_InteractiveContext->NbSelected() == 0)
+		if (!io.WantCaptureKeyboard)
+		{
+			switch (key)
 			{
-				m_InteractiveContext->SetDisplayMode(dm, false);
-				m_InteractiveContext->UpdateCurrentViewer();
+			case GLFW_KEY_F:
+			{
+				if (m_InteractiveContext->NbSelected() > 0)
+					m_InteractiveContext->FitSelected(m_View);
+				else
+					m_View->FitAll();
+				break;
 			}
-			else
+
+			case GLFW_KEY_S:
+			case GLFW_KEY_W:
 			{
-				for (m_InteractiveContext->InitSelected(); m_InteractiveContext->MoreSelected(); m_InteractiveContext->NextSelected())
+				const int dm = (key == GLFW_KEY_S) ? AIS_Shaded : AIS_WireFrame;
+
+				if (m_InteractiveContext->NbSelected() == 0)
 				{
-					m_InteractiveContext->SetDisplayMode(m_InteractiveContext->SelectedInteractive(), dm, false);
+					m_InteractiveContext->SetDisplayMode(dm, false);
+					m_InteractiveContext->UpdateCurrentViewer();
 				}
-				m_InteractiveContext->UpdateCurrentViewer();
+				else
+				{
+					for (m_InteractiveContext->InitSelected(); m_InteractiveContext->MoreSelected(); m_InteractiveContext->NextSelected())
+					{
+						m_InteractiveContext->SetDisplayMode(m_InteractiveContext->SelectedInteractive(), dm, false);
+					}
+					m_InteractiveContext->UpdateCurrentViewer();
+				}
+				break;
 			}
-			break;
-		}
-		case GLFW_KEY_BACKSPACE: // Axonometry.
-		{
-			m_View->SetProj(V3d_XposYnegZpos);
-			m_View->Redraw();
-			break;
-		}
-		case GLFW_KEY_T:
-		{
-			m_View->SetProj(V3d_TypeOfOrientation_Zup_Top);
-			m_View->Redraw();
-			break;
-		}
-		case GLFW_KEY_B:
-		{
-			m_View->SetProj(V3d_TypeOfOrientation_Zup_Bottom);
-			m_View->Redraw();
-			break;
-		}
-		case GLFW_KEY_L:
-		{
-			m_View->SetProj(V3d_TypeOfOrientation_Zup_Left);
-			m_View->Redraw();
-			break;
-		}
-		case GLFW_KEY_R:
-		{
-			m_View->SetProj(V3d_TypeOfOrientation_Zup_Right);
-			m_View->Redraw();
-			break;
-		}
-		default: break;
+
+			// axonometry-top-bottom-left-right views
+			case GLFW_KEY_BACKSPACE:
+			{
+				m_View->SetProj(V3d_XposYnegZpos);	// Axonometry
+				m_View->Redraw();
+				break;
+			}
+			case GLFW_KEY_T:
+			{
+				m_View->SetProj(V3d_TypeOfOrientation_Zup_Top);
+				m_View->Redraw();
+				break;
+			}
+			case GLFW_KEY_B:
+			{
+				m_View->SetProj(V3d_TypeOfOrientation_Zup_Bottom);
+				m_View->Redraw();
+				break;
+			}
+			case GLFW_KEY_L:
+			{
+				m_View->SetProj(V3d_TypeOfOrientation_Zup_Left);
+				m_View->Redraw();
+				break;
+			}
+			case GLFW_KEY_R:
+			{
+				m_View->SetProj(V3d_TypeOfOrientation_Zup_Right);
+				m_View->Redraw();
+				break;
+			}
+
+			// perspective-orthographic
+			case GLFW_KEY_P:
+			{
+				m_View->Camera()->SetProjectionType(Graphic3d_Camera::Projection_Perspective);
+				m_View->Redraw();
+				break;
+			}
+			case GLFW_KEY_O:
+			{
+				m_View->Camera()->SetProjectionType(Graphic3d_Camera::Projection_Orthographic);
+				m_View->Redraw();
+				break;
+			}
+
+			default: break;
+			}
 		}
 	}
 
-#pragma endregion
+#pragma endregion	
 }

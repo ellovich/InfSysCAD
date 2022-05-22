@@ -9,10 +9,12 @@ namespace InfSysCAD
 		ImGuiLayer();
 		~ImGuiLayer();
 
+		void Render();
+
 		void AddWindow(ImGuiWindow* newWin);
 
+	private:
 		void PreRender();
-		void Render();
 		void PostRender();
 
 	private:

@@ -2,8 +2,6 @@
 #include "infSys_pch.h"
 #include "CAD/Core/Application.h"
 
-#ifdef INFSYS_PLATFORM_WINDOWS
-
 int main(int argc, char** argv)
 {
 	InfSysCAD::Log::Init();
@@ -22,5 +20,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-
-#endif
