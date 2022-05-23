@@ -16,6 +16,7 @@ namespace InfSysCAD
 	private:
 		void PreRender();
 		void PostRender();
+		void RenderNotifications();
 
 	private:
 		std::vector<ImGuiWindow*> m_imguiWindows;

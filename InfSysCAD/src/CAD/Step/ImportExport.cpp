@@ -12,9 +12,63 @@
 #include <TDF_ChildIterator.hxx>
 #include <TDF_LabelSequence.hxx>
 
+#include <STEPCAFControl_Writer.hxx>
+#include <Interface_Static.hxx>
+
+#include "csv.h"
+
+namespace
+{
+    //! Handle single label.
+    int TraverseLabel(std::vector<std::string>& tree, 
+        const TDF_Label& theLabel, 
+        const TCollection_AsciiString& theNamePrefix, 
+        const TopLoc_Location& theLoc)
+    {
+        TCollection_AsciiString aName;
+        {
+            Handle(TDataStd_Name) aNodeName;
+            if (theLabel.FindAttribute(TDataStd_Name::GetID(), aNodeName))
+            {
+                aName = aNodeName->Get(); // instance name
+            }
+            if (aName.IsEmpty())
+            {
+                TDF_Label aRefLabel;
+                if (XCAFDoc_ShapeTool::GetReferredShape(theLabel, aRefLabel)
+                    && aRefLabel.FindAttribute(TDataStd_Name::GetID(), aNodeName))
+                {
+                    aName = aNodeName->Get(); // product name
+                }
+            }
+        }
+        aName = theNamePrefix + aName;
+
+        TDF_Label aRefLabel = theLabel;
+        XCAFDoc_ShapeTool::GetReferredShape(theLabel, aRefLabel);
+        if (XCAFDoc_ShapeTool::IsAssembly(aRefLabel))
+        {
+            aName += "/";
+            const TopLoc_Location aLoc = theLoc * XCAFDoc_ShapeTool::GetLocation(theLabel);
+            for (TDF_ChildIterator aChildIter(aRefLabel); aChildIter.More(); aChildIter.Next())
+            {
+                if (TraverseLabel(tree, aChildIter.Value(), aName, aLoc) == 1)
+                {
+                    return 1;
+                }
+            }
+            return 0;
+        }
+
+        tree.push_back(aName.ToCString());
+      //  std::cout << aName << " " << std::endl;
+        return 0;
+    }
+}
+
 namespace InfSysCAD
 {
-    Handle(TDocStd_Document) ImportExport::ReadStepWithMeta(const char* filename)
+    Handle(TDocStd_Document) ImportExport::LoadStepWithMeta(const char* filename)
     {
         STEPCAFControl_Reader Reader;
 
@@ -50,63 +104,120 @@ namespace InfSysCAD
         return doc;
     }
 
-
-
-
-    //! Handle single label.
-    int ImportExport::TraverseLabel(const TDF_Label& theLabel, const TCollection_AsciiString& theNamePrefix, const TopLoc_Location& theLoc)
+    bool ImportExport::SaveStepWithMeta(const Handle(TDocStd_Document)& doc, const char* filename)
     {
-        TCollection_AsciiString aName;
-        {
-            Handle(TDataStd_Name) aNodeName;
-            if (theLabel.FindAttribute(TDataStd_Name::GetID(), aNodeName))
-            {
-                aName = aNodeName->Get(); // instance name
-            }
-            if (aName.IsEmpty())
-            {
-                TDF_Label aRefLabel;
-                if (XCAFDoc_ShapeTool::GetReferredShape(theLabel, aRefLabel)
-                    && aRefLabel.FindAttribute(TDataStd_Name::GetID(), aNodeName))
-                {
-                    aName = aNodeName->Get(); // product name
-                }
-            }
-        }
-        aName = theNamePrefix + aName;
+        STEPCAFControl_Writer Writer;
 
-        TDF_Label aRefLabel = theLabel;
-        XCAFDoc_ShapeTool::GetReferredShape(theLabel, aRefLabel);
-        if (XCAFDoc_ShapeTool::IsAssembly(aRefLabel))
+        // To make subshape names work, we have to turn on the following static variable of OpenCascade.
+        Interface_Static::SetIVal("write.stepcaf.subshapes.name", 1);
+
+        // Write XDE document to file.
+        try
         {
-            aName += "/";
-            const TopLoc_Location aLoc = theLoc * XCAFDoc_ShapeTool::GetLocation(theLabel);
-            for (TDF_ChildIterator aChildIter(aRefLabel); aChildIter.More(); aChildIter.Next())
+            if (!Writer.Transfer(doc, STEPControl_AsIs))
             {
-                if (TraverseLabel(aChildIter.Value(), aName, aLoc) == 1)
-                {
-                    return 1;
-                }
+                return false;
             }
-            return 0;
+
+            const IFSelect_ReturnStatus ret = Writer.Write(filename);
+
+            if (ret != IFSelect_RetDone)
+            {
+                return false;
+            }
         }
-        std::cout << aName << " ";
-        return 0;
+        catch (...)
+        {
+            return false;
+        }
+
+        return true;
     }
 
-    //! Handle document root shapes.
-    int ImportExport::TraverseDocument(const Handle(TDocStd_Document)& theDoc)
+    bool ImportExport::SaveXDF(const Handle(TDocStd_Document)& doc, const char* filename)
+    {
+        Handle(TDocStd_Application) app = new TDocStd_Application;
+        BinXCAFDrivers::DefineFormat(app);
+        PCDM_StoreStatus sstatus = app->SaveAs(doc, filename);
+
+        return sstatus;
+    }
+
+    Ref<std::vector<TransportArray>> ImportExport::LoadTransportArray(const char* filename)
+    {
+        Ref<std::vector<TransportArray>> arr = CreateRef<std::vector<TransportArray>>();
+    
+        io::CSVReader<7> in(filename);
+        in.read_header(io::ignore_extra_column, "Name", "Material", "Grade", "Thickness", "Section name", "Profile type", "Length");
+        std::string Name, Material, Grade, Thickness, Section_name, Profile_type, Length;
+
+        while (in.read_row(Name, Material, Grade, Thickness, Section_name, Profile_type, Length)) 
+        {
+            arr->push_back(TransportArray(Name, Material, Grade, Thickness, Section_name, Profile_type, Length));
+        }
+
+        return arr;
+    }
+   
+
+    int ImportExport::TraverseDocument(std::vector<std::string>& tree, const Handle(TDocStd_Document)& theDoc)
     {
         TDF_LabelSequence aLabels;
         XCAFDoc_DocumentTool::ShapeTool(theDoc->Main())->GetFreeShapes(aLabels);
         for (TDF_LabelSequence::Iterator aLabIter(aLabels); aLabIter.More(); aLabIter.Next())
         {
             const TDF_Label& aLabel = aLabIter.Value();
-            if (TraverseLabel(aLabel, "", TopLoc_Location()) == 1)
+            if (TraverseLabel(tree, aLabel, "", TopLoc_Location()) == 1)
             {
                 return 1;
             }
         }
         return 0;
     }
+
+    Ref<std::vector<std::string>> ImportExport::GetTreeFromDoc(const Handle(TDocStd_Document)& theDoc)
+    {
+        Ref<std::vector<std::string>> tree = CreateRef<std::vector<std::string>>();
+
+        TraverseDocument(*tree, theDoc);
+        return tree;
+    }
+
+
+    //TopoDS_Shape getShapeFromStep(STEPControl_Reader reader, char* shapeName)
+    //{
+    //    TopoDS_Shape retShape;
+    //
+    //    //Handle_TColStd_HSequenceOfTransient shapeList = reader.GiveList("xst-model-roots");
+    //    Handle_TColStd_HSequenceOfTransient shapeList = reader.GiveList("xst-model-all");
+    //    int numShapesTrans = reader.TransferList(shapeList);
+    //    retShape = reader.OneShape();
+    //
+    //    for (int i = 1; i <= numShapesTrans; ++i)
+    //    {
+    //        Handle_Standard_Transient transient = shapeList->Value(i);
+    //        Handle_XSControl_WorkSession& theSession = reader.WS();
+    //        Handle_XSControl_TransferReader& aReader = theSession->TransferReader();
+    //        Handle_Transfer_TransientProcess& tp = aReader->TransientProcess();
+    //        TopoDS_Shape shape = TransferBRep::ShapeResult(tp, transient);
+    //        if (!shape.IsNull())
+    //        {
+    //            Handle_Standard_Transient anEntity = aReader->EntityFromShapeResult(shape, 1);
+    //            if (!anEntity.IsNull())
+    //            {
+    //                Handle_StepRepr_RepresentationItem entity = Handle_StepRepr_RepresentationItem::DownCast(anEntity);
+    //                if (!entity.IsNull())
+    //                {
+    //                    if (entity->Name()->String() == shapeName)
+    //                    {
+    //                        retShape = shape;
+    //                        break;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //
+    //    return retShape;
+    //}
 }

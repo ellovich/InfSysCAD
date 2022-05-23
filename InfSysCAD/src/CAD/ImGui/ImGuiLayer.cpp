@@ -10,6 +10,7 @@
 
 #include <GLFW/glfw3.h>
 #include <backends/imgui_impl_opengl3_loader.h>
+#include <ImGui_notify.h>
 //#include "ImGuizmo.h"
 
 namespace InfSysCAD
@@ -35,6 +36,9 @@ namespace InfSysCAD
 
 		ImGui::SetupImGuiStyle();
 
+		// Initialize notify
+		// ImGui::MergeIconsWithLatestFont(16.f, false);
+
 		GLFWwindow* window = Application::Get().GetWindow().GetGLFWwindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 330");
@@ -42,11 +46,11 @@ namespace InfSysCAD
 		//ImGuiWindow* mbw = new MenuBarWindow();
 		//AddWindow(mbw);
 
-		ImGuiWindow* lw = new LogWindow();
-		AddWindow(lw);
-
 		ImGuiWindow* prop = new PropertyWindow();
 		AddWindow(prop);
+
+		ImGuiWindow* tran = new TransportArrWindow();
+		AddWindow(tran);
 	}
 
 	ImGuiLayer::~ImGuiLayer()
@@ -70,6 +74,8 @@ namespace InfSysCAD
 		ImGui::ShowDemoWindow();
 		for (auto i = 0; i < m_imguiWindows.size(); i++)
 			m_imguiWindows[i]->Render();
+
+		RenderNotifications();
 
 		PostRender();
 	}
@@ -132,5 +138,14 @@ namespace InfSysCAD
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_current_context);
 		}
+	}
+	void ImGuiLayer::RenderNotifications()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.f); // Round borders
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.78f, 0.87f, 0.98f, 0.70f));
+		ImGui::RenderNotifications();
+		ImGui::PopStyleVar(1);
+		ImGui::PopStyleColor(1);
+
 	}
 }

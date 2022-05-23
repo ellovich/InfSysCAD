@@ -60,6 +60,7 @@ project "InfSysCAD"
 	{
 		"InfSysCAD/src", 
 		"%{prj.name}/products/spdlog/include",	
+		"%{prj.name}/products/csv",	
 		"%{IncludeDir.glfw}",
 		"%{IncludeDir.imgui}",
 		"%{IncludeDir.occt}",
@@ -180,6 +181,7 @@ project "InfSysCAD"
 	filter "configurations:Debug"
 		debugenvs { "PATH=$(SolutionDir)InfSysCAD\\products\\occt-install\\win64\\vc14\\bind;$(SolutionDir)products\\freetype-2.5.5-vc14-64\\bin;%PATH%" }
 		libdirs { "InfSysCAD/products/occt-install/win64/vc14/libd" }
+		debugargs { "resources/models/chassis.step" }
 		defines "INFSYS_DEBUG"
 		runtime "Debug"
 		symbols "on"

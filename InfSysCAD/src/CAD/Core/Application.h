@@ -11,6 +11,11 @@ namespace InfSysCAD
         int Count = 0;
         char** Args = nullptr;
 
+        AppCmdLineArgs(int argc = 0, char** argv = nullptr)
+            : Count(argc), Args(argv)
+        {
+        }
+
         const char* operator[](int index) const
         {
             INFSYS_ASSERT(index < Count);
@@ -23,7 +28,7 @@ namespace InfSysCAD
     public:
         static Application& Get() { return *s_Instance; }
 
-        Application(const char* name = "InfSysCAD", AppCmdLineArgs args = AppCmdLineArgs());
+        Application(const char* name, Ref<AppCmdLineArgs> args);
         ~Application() = default;
 
         void Run();
@@ -33,11 +38,12 @@ namespace InfSysCAD
         Viewer& GetViewer() const { return *m_Viewer; }
         Scene& GetScene() const { return *m_Scene; }
         ImGuiLayer& GetImGuiLayer() const { return *m_ImGuiLayer; }
+        AppCmdLineArgs& GetArgs() const { return *m_CmdLineArgs; }
 
     private:
         static Application* s_Instance;
 
-        AppCmdLineArgs m_CmdLineArgs;
+        Ref<AppCmdLineArgs> m_CmdLineArgs;
 
         Window* m_Window;
         Scope<Viewer> m_Viewer;

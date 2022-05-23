@@ -7,7 +7,7 @@ namespace InfSysCAD
 {
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const char* name, AppCmdLineArgs args)
+	Application::Application(const char* name, Ref<AppCmdLineArgs> args)
 		: m_CmdLineArgs(args)
 	{
 		INFSYS_PROFILE_FUNCTION();
@@ -15,7 +15,7 @@ namespace InfSysCAD
 		INFSYS_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		m_Window = new Window(name, 1280, 720);
+		m_Window = new Window(name, 1600, 900);
 		m_Viewer = CreateScope<Viewer>(m_Window);
 		m_Scene = CreateScope<Scene>(m_Viewer->GetContext());
 		m_ImGuiLayer = CreateScope<ImGuiLayer>();
@@ -33,6 +33,7 @@ namespace InfSysCAD
 			m_ImGuiLayer->Render();
 			glfwSwapBuffers(m_Window->GetGLFWwindow());
 		}
-		std::cout << "";
+		
+		INFSYS_INFO("Shutting down");
 	}
 }

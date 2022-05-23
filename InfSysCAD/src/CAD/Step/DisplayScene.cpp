@@ -17,8 +17,6 @@
 #include <XCAFPrs_AISObject.hxx>
 #include <XCAFPrs_Style.hxx>
 
-#undef COUT_DEBUG
-
 namespace
 {
     bool IsEmptyShape(const TopoDS_Shape& shape)
@@ -36,7 +34,6 @@ namespace
         return numSubShapes == 0;
     }
 }
-
 
 namespace InfSysCAD
 {
@@ -85,8 +82,6 @@ namespace InfSysCAD
 
         return true;
     }
-
-
 
     void DisplayScene::displayItem(const TDF_Label& label,
         const TopLoc_Location& parentTrsf,
@@ -152,7 +147,7 @@ namespace InfSysCAD
                     // Original.
                     Handle(AIS_ColoredShape) brepPrs = new XCAFPrs_AISObject(refLabel);
 
-                    INFSYS_TRACE("DisplayScene::Execute() : creating AIS object connected to the item '{0}'", refEntry.ToCString());
+                    INFSYS_TRACE("DisplayScene::Execute(): creating AIS object connected to the item '{0}'", refEntry.ToCString());
 
                     // Connected.
                     brepConnected = new AIS_ConnectedInteractive();

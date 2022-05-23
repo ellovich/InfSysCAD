@@ -87,12 +87,13 @@ namespace InfSysCAD
 		// optional
 		m_View->ChangeRenderingParams().ToShowStats = true;
 		m_View->ChangeRenderingParams().RenderResolutionScale = 2.0f;
+		m_View->ChangeRenderingParams().StatsPosition = new Graphic3d_TransformPers(Graphic3d_TMF_2d, Aspect_TOTP_RIGHT_UPPER, Graphic3d_Vec2i(20, 20));
 		m_View->SetBgGradientColors(
 			Quantity_Color(0.75, 0.78, 0.95, Quantity_TOC_RGB),
 			Quantity_Color(0.63, 0.6, 0.61, Quantity_TOC_RGB),
 			Aspect_GFM_DIAG1
 		);
-		m_View->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_BLUE1, 0.14, V3d_WIREFRAME);
+		m_View->TriedronDisplay(Aspect_TOTP_RIGHT_LOWER, Quantity_NOC_BLUE1, 0.12, V3d_ZBUFFER);
 		m_View->SetShadingModel(V3d_PHONG);
 
 		// AIS_InteractiveContext
@@ -123,7 +124,7 @@ namespace InfSysCAD
 		previous_seconds = current_seconds;
 
 		glViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		{
@@ -137,7 +138,6 @@ namespace InfSysCAD
 		}
 
 		glfwWaitEvents();
-
 		{
 			INFSYS_PROFILE_SCOPE("HandleViewEvents");
 			HandleViewEvents(m_InteractiveContext, m_View);
@@ -202,7 +202,7 @@ namespace InfSysCAD
 	void Viewer::onMouseScroll(double dx, double dy)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		io.AddMouseWheelEvent(dx, dy);
+		io.AddMouseWheelEvent((float)dx, (float)dy);
 
 		if (!io.WantCaptureMouse) // ONLY forward mouse data to your underlying app/game.
 		{
@@ -228,7 +228,7 @@ namespace InfSysCAD
 	void Viewer::onMouseMove(int x, int y)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		io.AddMousePosEvent(x, y);
+		io.AddMousePosEvent((float)x, (float)y);
 
 		if (!io.WantCaptureMouse) // ONLY forward mouse data to your underlying app/game.
 		{

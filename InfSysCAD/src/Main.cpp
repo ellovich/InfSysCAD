@@ -2,12 +2,14 @@
 #include "infSys_pch.h"
 #include "CAD/Core/Application.h"
 
+using namespace InfSysCAD;
+
 int main(int argc, char** argv)
 {
 	InfSysCAD::Log::Init();
 
 	INFSYS_PROFILE_BEGIN_SESSION("Startup", "InfSysCAD_Profile-Startup.json");
-	auto app = new InfSysCAD::Application();
+	auto app = new InfSysCAD::Application("InfSysCAD", CreateRef<AppCmdLineArgs>(argc, argv));
 	INFSYS_PROFILE_END_SESSION();
 
 	INFSYS_PROFILE_BEGIN_SESSION("Runtime", "InfSysCAD_Runtime.json");

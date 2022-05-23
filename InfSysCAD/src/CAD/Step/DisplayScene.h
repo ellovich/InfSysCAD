@@ -29,8 +29,6 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-
-// OpenCascade includes
 #include <NCollection_DataMap.hxx>
 #include <NCollection_List.hxx>
 
@@ -56,7 +54,6 @@ namespace InfSysCAD
         DEFINE_STANDARD_RTTI_INLINE(DisplayScene, Standard_Transient)
 
     public:
-
         //! Ctor accepting the interactive context to use.
         //! \param[in] doc the XDE document to visualize.
         //! \param[in] ctx the interactive context instance.
@@ -67,14 +64,11 @@ namespace InfSysCAD
             m_ctx(ctx)
         {}
 
-    public:
-
         //! Executes this visualization command.
         //! \return execution status (true for success, false for failure).
         virtual bool Execute();
 
     protected:
-
         //! Display items conatined in the XDE document.
         //! \param[in] label          the OCAF label with assembly or shape to display.
         //! \param[in] parentTrsf     the transformation of the  parent assembly.
@@ -90,12 +84,10 @@ namespace InfSysCAD
             LabelPrsMap& mapOfOriginals);
 
     protected:
-
         //! XDE document to visualize.
         Handle(TDocStd_Document) m_doc;
 
         //! Interactive context facade to work with AIS.
         Handle(AIS_InteractiveContext) m_ctx;
-
     };
 }

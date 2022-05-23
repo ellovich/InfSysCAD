@@ -11,3 +11,6 @@
 [submodule "InfSysCAD/products/occt"]
 	path = InfSysCAD/products/occt
 	url = https://github.com/Open-Cascade-SAS/OCCT
+[submodule "InfSysCAD/products/csv"]
+	path = InfSysCAD/products/csv
+	url = https://github.com/ben-strasser/fast-cpp-csv-parser
