@@ -89,12 +89,12 @@ namespace InfSysCAD
 		m_View->ChangeRenderingParams().RenderResolutionScale = 2.0f;
 		m_View->ChangeRenderingParams().StatsPosition = new Graphic3d_TransformPers(Graphic3d_TMF_2d, Aspect_TOTP_RIGHT_UPPER, Graphic3d_Vec2i(20, 20));
 		m_View->SetBgGradientColors(
-			Quantity_Color(0.75, 0.78, 0.95, Quantity_TOC_RGB),
-			Quantity_Color(0.63, 0.6, 0.61, Quantity_TOC_RGB),
+			Quantity_Color(0.15, 0.18, 0.15, Quantity_TOC_RGB),
+			Quantity_Color(0.23, 0.3, 0.61, Quantity_TOC_RGB),
 			Aspect_GFM_DIAG1
 		);
 		m_View->TriedronDisplay(Aspect_TOTP_RIGHT_LOWER, Quantity_NOC_BLUE1, 0.12, V3d_ZBUFFER);
-		m_View->SetShadingModel(V3d_PHONG);
+		m_View->SetShadingModel(Graphic3d_TypeOfShadingModel_Gouraud);
 
 		// AIS_InteractiveContext
 		m_InteractiveContext = new AIS_InteractiveContext(aViewer);

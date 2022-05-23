@@ -36,29 +36,21 @@ namespace InfSysCAD
 
 		ImGui::SetupImGuiStyle();
 
-		// Initialize notify
-		// ImGui::MergeIconsWithLatestFont(16.f, false);
-
 		GLFWwindow* window = Application::Get().GetWindow().GetGLFWwindow();
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 330");
 
-		//ImGuiWindow* mbw = new MenuBarWindow();
-		//AddWindow(mbw);
-
-		ImGuiWindow* prop = new PropertyWindow();
-		AddWindow(prop);
-
-		ImGuiWindow* tran = new TransportArrWindow();
-		AddWindow(tran);
+		AddWindow(new MenuBarWindow());
+		AddWindow(new PropertyWindow());
+		AddWindow(new TransportArrWindow());
 	}
 
 	ImGuiLayer::~ImGuiLayer()
 	{
 		INFSYS_PROFILE_FUNCTION();
 
-		//for (int i = 0; i < m_imguiWindows.size(); i++)
-		//	m_imguiWindows[i]->~ImGuiWindow();
+		for (int i = 0; i < m_imguiWindows.size(); i++)
+			delete m_imguiWindows[i];
 
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();

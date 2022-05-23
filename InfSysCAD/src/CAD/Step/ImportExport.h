@@ -13,9 +13,9 @@ namespace InfSysCAD
 	{
 	public:
 		static Handle(TDocStd_Document) LoadStepWithMeta(const char* filename);
-		static bool SaveStepWithMeta(const Handle(TDocStd_Document)& doc, const char* filename);
+		static int SaveStepWithMeta(const Handle(TDocStd_Document)& doc, const char* filename);
 
-		static bool SaveXDF(const Handle(TDocStd_Document)& doc, const char* filename);
+		static int SaveXDF(const Handle(TDocStd_Document)& doc, const char* filename);
 		
 		static Ref<std::vector<TransportArray>> ImportExport::LoadTransportArray(const char* filename);
 

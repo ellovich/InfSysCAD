@@ -16,7 +16,8 @@ namespace InfSysCAD
 		void Update();
 
 		Handle(AIS_InteractiveContext) GetContext() const { return m_InteractiveContext; }
-		
+		Handle(V3d_View) GetView() const { return m_View; }
+
 	private:
 		void InitCallbacks();
 

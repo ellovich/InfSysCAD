@@ -104,7 +104,7 @@ namespace InfSysCAD
         return doc;
     }
 
-    bool ImportExport::SaveStepWithMeta(const Handle(TDocStd_Document)& doc, const char* filename)
+    int ImportExport::SaveStepWithMeta(const Handle(TDocStd_Document)& doc, const char* filename)
     {
         STEPCAFControl_Writer Writer;
 
@@ -134,7 +134,7 @@ namespace InfSysCAD
         return true;
     }
 
-    bool ImportExport::SaveXDF(const Handle(TDocStd_Document)& doc, const char* filename)
+    int ImportExport::SaveXDF(const Handle(TDocStd_Document)& doc, const char* filename)
     {
         Handle(TDocStd_Application) app = new TDocStd_Application;
         BinXCAFDrivers::DefineFormat(app);
@@ -178,46 +178,7 @@ namespace InfSysCAD
     Ref<std::vector<std::string>> ImportExport::GetTreeFromDoc(const Handle(TDocStd_Document)& theDoc)
     {
         Ref<std::vector<std::string>> tree = CreateRef<std::vector<std::string>>();
-
         TraverseDocument(*tree, theDoc);
         return tree;
     }
-
-
-    //TopoDS_Shape getShapeFromStep(STEPControl_Reader reader, char* shapeName)
-    //{
-    //    TopoDS_Shape retShape;
-    //
-    //    //Handle_TColStd_HSequenceOfTransient shapeList = reader.GiveList("xst-model-roots");
-    //    Handle_TColStd_HSequenceOfTransient shapeList = reader.GiveList("xst-model-all");
-    //    int numShapesTrans = reader.TransferList(shapeList);
-    //    retShape = reader.OneShape();
-    //
-    //    for (int i = 1; i <= numShapesTrans; ++i)
-    //    {
-    //        Handle_Standard_Transient transient = shapeList->Value(i);
-    //        Handle_XSControl_WorkSession& theSession = reader.WS();
-    //        Handle_XSControl_TransferReader& aReader = theSession->TransferReader();
-    //        Handle_Transfer_TransientProcess& tp = aReader->TransientProcess();
-    //        TopoDS_Shape shape = TransferBRep::ShapeResult(tp, transient);
-    //        if (!shape.IsNull())
-    //        {
-    //            Handle_Standard_Transient anEntity = aReader->EntityFromShapeResult(shape, 1);
-    //            if (!anEntity.IsNull())
-    //            {
-    //                Handle_StepRepr_RepresentationItem entity = Handle_StepRepr_RepresentationItem::DownCast(anEntity);
-    //                if (!entity.IsNull())
-    //                {
-    //                    if (entity->Name()->String() == shapeName)
-    //                    {
-    //                        retShape = shape;
-    //                        break;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //
-    //    return retShape;
-    //}
 }

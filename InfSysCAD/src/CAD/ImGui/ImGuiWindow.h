@@ -46,7 +46,6 @@ namespace InfSysCAD
         bool m_Loaded;
     };
 
-    /// ///////////////////////////////////////////////////////////
 
     //struct ExampleAppLog
     //{
