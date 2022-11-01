@@ -1,7 +1,7 @@
 #include "infSys_pch.h"
 #include "ImGuiWindow.h"
 #include "CAD/Core/Application.h"
-#include <ImGui_notify.h>
+//#include <ImGui_notify.h>
 
 namespace 
 {
@@ -26,11 +26,11 @@ namespace InfSysCAD
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Load", "CTRL + L"))
+			/*	if (ImGui::MenuItem("Load", "CTRL + L"))
 				{
 					InfSysCAD::Application::Get().GetScene().LoadSTEP_File();
 					ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded!" });
-				}
+				}*/
 
 				if (ImGui::BeginMenu("Save"))
 				{
@@ -51,11 +51,11 @@ namespace InfSysCAD
 	{
 		ImGui::Begin("Properties");
 
-		if (ImGui::Button(ICON_FA_FILE"  Load STEP..."))
+	/*	if (ImGui::Button(ICON_FA_FILE"  Load STEP..."))
 		{
 			m_Loaded = InfSysCAD::Application::Get().GetScene().LoadSTEP_File();
 			if (m_Loaded) ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded!" });
-		}
+		}*/
 		ImGui::SameLine(0, 5.0f);
 		ImGui::Text(InfSysCAD::Application::Get().GetScene().GetModelFilename().c_str());
 
@@ -192,11 +192,11 @@ namespace InfSysCAD
 			//ImGui::Text(ICON_FA_TRASH);
 			//ImGui::Text(ICON_FA_TRASH_ALT);
 
-			if (ImGui::Button(ICON_FA_FILE "  Load transport array..."))
+			/*if (ImGui::Button(ICON_FA_FILE "  Load transport array..."))
 			{
 				m_Loaded = InfSysCAD::Application::Get().GetScene().LoadTransportArray();
 				ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Loaded!" });
-			}
+			}*/
 			ImGui::SameLine(0, 5.0f);
 			ImGui::Text(InfSysCAD::Application::Get().GetScene().GetTransportArrayFilename().c_str());
 
@@ -247,18 +247,18 @@ namespace InfSysCAD
 					}
 				}
 
-				if (ImGui::Button(ICON_FA_LINK "  Merge with part"))
-				{
-					if (Application::Get().GetScene().SetArrayMaterials())
-					{
-						//		m_Loaded = InfSysCAD::Application::Get().GetScene().LoadTransportArray();
-						ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Merged!" });
-					}
-					else
-					{
-						ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Merging failed!" });
-					}
-				}
+				//if (ImGui::Button(ICON_FA_LINK "  Merge with part"))
+				//{
+				//	if (Application::Get().GetScene().SetArrayMaterials())
+				//	{
+				//		//		m_Loaded = InfSysCAD::Application::Get().GetScene().LoadTransportArray();
+				//		ImGui::InsertNotification({ ImGuiToastType_Success, 3000, "Merged!" });
+				//	}
+				//	else
+				//	{
+				//		ImGui::InsertNotification({ ImGuiToastType_Error, 3000, "Merging failed!" });
+				//	}
+				//}
 			}
 		}
 

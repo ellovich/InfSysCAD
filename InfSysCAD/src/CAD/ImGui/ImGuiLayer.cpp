@@ -10,7 +10,7 @@
 
 #include <GLFW/glfw3.h>
 #include <backends/imgui_impl_opengl3_loader.h>
-#include <ImGui_notify.h>
+//#include <ImGui_notify.h>
 //#include "ImGuizmo.h"
 
 namespace InfSysCAD
@@ -135,7 +135,7 @@ namespace InfSysCAD
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.f); // Round borders
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.78f, 0.87f, 0.98f, 0.70f));
-		ImGui::RenderNotifications();
+		//ImGui::RenderNotifications();
 		ImGui::PopStyleVar(1);
 		ImGui::PopStyleColor(1);
 
